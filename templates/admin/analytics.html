@@ -1,0 +1,35 @@
+{% extends 'admin/base.html' %}
+{% block title %}Analytics — NestFind{% endblock %}
+{% block extra_css %}<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>{% endblock %}
+{% block admin_content %}
+<h1 class="admin-title">📈 Analytics</h1>
+<div class="grid-2" style="gap:1.5rem;align-items:start;">
+  <div class="card" style="padding:1.5rem;">
+    <h3 style="margin-bottom:1rem;font-size:1rem;">💰 Price Distribution</h3>
+    <canvas id="priceChart" height="220"></canvas>
+  </div>
+  <div class="card" style="padding:1.5rem;">
+    <h3 style="margin-bottom:1rem;font-size:1rem;">🛏️ BHK Distribution</h3>
+    <canvas id="bhkChart" height="220"></canvas>
+  </div>
+  <div class="card" style="padding:1.5rem;">
+    <h3 style="margin-bottom:1rem;font-size:1rem;">🏙️ Top Cities</h3>
+    <canvas id="cityChart" height="220"></canvas>
+  </div>
+  <div class="card" style="padding:1.5rem;">
+    <h3 style="margin-bottom:1rem;font-size:1rem;">📊 Platform Summary</h3>
+    <div style="display:flex;flex-direction:column;gap:.8rem;">
+      <div style="display:flex;justify-content:space-between;padding:.8rem;background:var(--sand);border-radius:10px;"><span>Total Active Properties</span><strong>{{ total_props }}</strong></div>
+      {% for bucket, count in price_buckets.items() %}
+      <div style="display:flex;justify-content:space-between;padding:.8rem;background:var(--sand);border-radius:10px;"><span>Rent {{ bucket }}</span><strong>{{ count }}</strong></div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+<script>
+const terra='rgb(212,112,74)',clay='rgb(196,149,106)',dark='rgb(26,20,18)';
+new Chart(document.getElementById('priceChart'),{type:'bar',data:{labels:{{ price_buckets.keys()|list|tojson }},datasets:[{label:'Properties',data:{{ price_buckets.values()|list|tojson }},backgroundColor:terra,borderRadius:6}]},options:{plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});
+new Chart(document.getElementById('bhkChart'),{type:'doughnut',data:{labels:{{ bhk_dist.keys()|list|tojson }},datasets:[{data:{{ bhk_dist.values()|list|tojson }},backgroundColor:[terra,clay,'#e8a87c','#f0c8a0']}]},options:{plugins:{legend:{position:'bottom'}}}});
+new Chart(document.getElementById('cityChart'),{type:'bar',data:{labels:{{ top_cities|map(attribute=0)|list|tojson }},datasets:[{label:'Properties',data:{{ top_cities|map(attribute=1)|list|tojson }},backgroundColor:clay,borderRadius:6}]},options:{indexAxis:'y',plugins:{legend:{display:false}},scales:{x:{beginAtZero:true}}}});
+</script>
+{% endblock %}

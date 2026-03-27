@@ -1,0 +1,98 @@
+{% extends 'admin/base.html' %}
+{% block title %}Admin Dashboard — NestFind{% endblock %}
+{% block admin_content %}
+<h1 class="admin-title">📊 Dashboard</h1>
+<div class="stat-cards">
+  <div class="stat-card"><div class="stat-icon">👥</div><div class="stat-value">{{ stats.total_users }}</div><div class="stat-name">Total Users</div></div>
+  <div class="stat-card" style="border-color:#2471a3;"><div class="stat-icon">🏠</div><div class="stat-value">{{ stats.active_properties }}</div><div class="stat-name">Active Properties</div></div>
+  <div class="stat-card" style="border-color:#d68910;"><div class="stat-icon">⏳</div><div class="stat-value">{{ stats.pending_verification }}</div><div class="stat-name">Pending Verify</div></div>
+  <div class="stat-card" style="border-color:#2d7a4f;"><div class="stat-icon">⭐</div><div class="stat-value">{{ stats.total_reviews }}</div><div class="stat-name">Reviews</div></div>
+  <div class="stat-card" style="border-color:#8e44ad;"><div class="stat-icon">📩</div><div class="stat-value">{{ stats.total_inquiries }}</div><div class="stat-name">Inquiries</div></div>
+</div>
+
+<div class="grid-2" style="align-items:start;gap:1.5rem;">
+  <!-- PENDING VERIFICATION -->
+  <div>
+    <h2 style="font-size:1.3rem;margin-bottom:1rem;">⏳ Pending Verification</h2>
+    <div class="card">
+      {% if pending_props %}
+      {% for prop in pending_props %}
+      <div style="padding:1rem;border-bottom:1px solid var(--sand);display:flex;justify-content:space-between;align-items:start;gap:1rem;">
+        <div>
+          <div style="font-weight:600;font-size:.9rem;">{{ prop.title }}</div>
+          <div style="color:var(--muted);font-size:.82rem;">{{ prop.city }} · ₹{{ "{:,.0f}".format(prop.price) }}/mo</div>
+          <div style="color:var(--muted);font-size:.78rem;margin-top:.2rem;">by {{ prop.owner.name }}</div>
+        </div>
+        <form method="POST" action="/admin/property/verify/{{ prop.id }}">
+          <button type="submit" class="btn btn-success btn-sm"><i class="fas fa-check"></i> Verify</button>
+        </form>
+      </div>
+      {% endfor %}
+      {% else %}
+      <div style="padding:2rem;text-align:center;color:var(--muted);">✅ All properties verified!</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- RECENT USERS -->
+  <div>
+    <h2 style="font-size:1.3rem;margin-bottom:1rem;">👤 Recent Users</h2>
+    <div class="card">
+      {% for user in recent_users %}
+      <div style="padding:.8rem 1rem;border-bottom:1px solid var(--sand);display:flex;justify-content:space-between;align-items:center;">
+        <div>
+          <div style="font-weight:600;font-size:.9rem;">{{ user.name }}</div>
+          <div style="color:var(--muted);font-size:.82rem;">{{ user.email }}</div>
+        </div>
+        <span class="badge {% if user.role=='owner' %}badge-info{% elif user.role=='admin' %}badge-warn{% else %}badge-success{% endif %}">{{ user.role|capitalize }}</span>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<!-- DATA MINING INSIGHTS -->
+<div style="margin-top:2rem;">
+  <div style="display:flex;align-items:center;gap:.8rem;margin-bottom:1rem;">
+    <h2 style="font-size:1.3rem;">🤖 Data Mining Insights</h2>
+    <span class="ai-badge">AI Powered</span>
+  </div>
+  <div class="grid-2" style="align-items:start;gap:1.5rem;">
+    <!-- USER CLUSTERS -->
+    <div class="card" style="padding:1.5rem;">
+      <h3 style="font-size:1rem;margin-bottom:1rem;">👥 User Clusters (K-Means)</h3>
+      {% if clusters %}
+      {% set cluster_counts = {} %}
+      {% for c in clusters %}{% set _ = cluster_counts.update({c.cluster_label: cluster_counts.get(c.cluster_label, 0) + 1}) %}{% endfor %}
+      {% for label, count in cluster_counts.items() %}
+      <div style="display:flex;justify-content:space-between;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--sand);">
+        <span style="font-size:.9rem;">{{ label }}</span>
+        <div style="display:flex;align-items:center;gap:.5rem;">
+          <div style="height:8px;background:var(--terracotta);border-radius:4px;width:{{ count * 10 }}px;max-width:100px;"></div>
+          <span style="font-size:.82rem;color:var(--muted);">{{ count }} users</span>
+        </div>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="color:var(--muted);font-size:.9rem;">Need at least 4 tenant users for clustering.</p>
+      {% endif %}
+    </div>
+    <!-- ASSOCIATION RULES -->
+    <div class="card" style="padding:1.5rem;">
+      <h3 style="font-size:1rem;margin-bottom:1rem;">🔗 Association Rules (Apriori)</h3>
+      {% if assoc_rules %}
+      {% for rule in assoc_rules %}
+      <div style="padding:.5rem 0;border-bottom:1px solid var(--sand);font-size:.85rem;">
+        <span style="color:var(--deep);font-weight:600;">Property #{{ rule.if }}</span>
+        <span style="color:var(--muted);"> → </span>
+        <span style="color:var(--terracotta);font-weight:600;">Property #{{ rule.then }}</span>
+        <span style="float:right;color:var(--muted);">conf: {{ (rule.confidence*100)|int }}%</span>
+      </div>
+      {% endfor %}
+      {% else %}
+      <p style="color:var(--muted);font-size:.9rem;">Need more wishlist data to find patterns.</p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

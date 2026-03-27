@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Edit Property — NestFind{% endblock %}
+{% block content %}
+<div style="background:var(--deep);padding:2.5rem 2rem;"><div class="container"><h1 style="color:white;">Edit Property</h1></div></div>
+<div class="container" style="padding:2rem 1.5rem;max-width:700px;">
+  <form method="POST">
+    <div style="background:white;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(26,20,18,0.06);">
+      <h3 style="margin-bottom:1.2rem;">Basic Information</h3>
+      <div class="form-group"><label class="form-label">Title</label><input type="text" name="title" class="form-control" value="{{ property.title }}" required></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-control">{{ property.description }}</textarea></div>
+      <div class="grid-2">
+        <div class="form-group"><label class="form-label">City</label><input type="text" name="city" class="form-control" value="{{ property.city }}" required></div>
+        <div class="form-group"><label class="form-label">Location</label><input type="text" name="location" class="form-control" value="{{ property.location }}" required></div>
+        <div class="form-group"><label class="form-label">Price (₹/mo)</label><input type="number" name="price" class="form-control" value="{{ property.price }}" required></div>
+        <div class="form-group"><label class="form-label">BHK</label><select name="bhk" class="form-control"><option value="1" {% if property.bhk==1 %}selected{% endif %}>1 BHK</option><option value="2" {% if property.bhk==2 %}selected{% endif %}>2 BHK</option><option value="3" {% if property.bhk==3 %}selected{% endif %}>3 BHK</option><option value="4" {% if property.bhk==4 %}selected{% endif %}>4+ BHK</option></select></div>
+        <div class="form-group"><label class="form-label">Type</label><select name="property_type" class="form-control"><option value="apartment" {% if property.property_type=='apartment' %}selected{% endif %}>Apartment</option><option value="villa" {% if property.property_type=='villa' %}selected{% endif %}>Villa</option><option value="room" {% if property.property_type=='room' %}selected{% endif %}>Room</option><option value="pg" {% if property.property_type=='pg' %}selected{% endif %}>PG</option></select></div>
+        <div class="form-group"><label class="form-label">Furnishing</label><select name="furnishing" class="form-control"><option value="furnished" {% if property.furnishing=='furnished' %}selected{% endif %}>Furnished</option><option value="semi" {% if property.furnishing=='semi' %}selected{% endif %}>Semi</option><option value="unfurnished" {% if property.furnishing=='unfurnished' %}selected{% endif %}>Unfurnished</option></select></div>
+        <div class="form-group"><label class="form-label">Area (sqft)</label><input type="number" name="area_sqft" class="form-control" value="{{ property.area_sqft or '' }}"></div>
+      </div>
+    </div>
+    {% if property.features %}
+    <div style="background:white;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(26,20,18,0.06);">
+      <h3 style="margin-bottom:1.2rem;">Amenities</h3>
+      <div class="amenities-grid">
+        {% for am in [('balcony','Balcony'),('parking','Parking'),('lift','Lift'),('security','Security'),('water_supply','Water Supply'),('gym','Gym'),('wifi','WiFi'),('ac','AC'),('power_backup','Power Backup')] %}
+        <div class="form-check"><input type="checkbox" name="{{ am[0] }}" id="{{ am[0] }}" {% if getattr(property.features, am[0], False) %}checked{% endif %}><label for="{{ am[0] }}">{{ am[1] }}</label></div>
+        {% endfor %}
+      </div>
+      <div style="margin-top:1rem;">
+        <h4 style="margin-bottom:.8rem;font-size:.9rem;">Tenant Preferences</h4>
+        <div class="amenities-grid">
+          <div class="form-check"><input type="checkbox" name="family_allowed" id="fam" {% if property.features.family_allowed %}checked{% endif %}><label for="fam">Family</label></div>
+          <div class="form-check"><input type="checkbox" name="bachelor_allowed" id="bach" {% if property.features.bachelor_allowed %}checked{% endif %}><label for="bach">Bachelor</label></div>
+          <div class="form-check"><input type="checkbox" name="pets_allowed" id="pets" {% if property.features.pets_allowed %}checked{% endif %}><label for="pets">Pets</label></div>
+          <div class="form-check"><input type="checkbox" name="veg_only" id="veg" {% if property.features.veg_only %}checked{% endif %}><label for="veg">Veg Only</label></div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+    <div style="display:flex;gap:1rem;">
+      <button type="submit" class="btn btn-terra">Save Changes</button>
+      <a href="/owner/dashboard" class="btn btn-sand">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

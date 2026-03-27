@@ -1,0 +1,27 @@
+{% extends 'admin/base.html' %}
+{% block title %}Manage Users — NestFind{% endblock %}
+{% block admin_content %}
+<h1 class="admin-title">👥 All Users</h1>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for user in users %}
+      <tr>
+        <td style="font-weight:600;">{{ user.name }}</td>
+        <td style="color:var(--muted);font-size:.85rem;">{{ user.email }}</td>
+        <td><span class="badge {% if user.role=='owner' %}badge-info{% elif user.role=='admin' %}badge-warn{% elif user.role=='blocked' %}badge-danger{% else %}badge-success{% endif %}">{{ user.role|capitalize }}</span></td>
+        <td style="font-size:.85rem;color:var(--muted);">{{ user.created_at.strftime('%d %b %Y') }}</td>
+        <td>
+          {% if user.role != 'admin' %}
+          <form method="POST" action="/admin/user/toggle/{{ user.id }}" style="display:inline;">
+            <button type="submit" class="btn {{ 'btn-danger' if user.role != 'blocked' else 'btn-success' }} btn-sm">{{ 'Block' if user.role != 'blocked' else 'Unblock' }}</button>
+          </form>
+          {% endif %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+{% block title %}Owner Dashboard — NestFind{% endblock %}
+{% block content %}
+<div class="owner-header">
+  <div class="container">
+    <h1>Welcome, {{ current_user.name }} 👋</h1>
+    <p>Manage your rental listings and inquiries</p>
+  </div>
+</div>
+<div class="container section-sm">
+  <!-- STATS -->
+  <div class="stat-cards">
+    <div class="stat-card"><div class="stat-icon">🏠</div><div class="stat-value">{{ stats.total }}</div><div class="stat-name">Total Listings</div></div>
+    <div class="stat-card" style="border-color:#2d7a4f;"><div class="stat-icon">✅</div><div class="stat-value">{{ stats.active }}</div><div class="stat-name">Active</div></div>
+    <div class="stat-card" style="border-color:#2471a3;"><div class="stat-icon">🔐</div><div class="stat-value">{{ stats.verified }}</div><div class="stat-name">Verified</div></div>
+    <div class="stat-card" style="border-color:#d68910;"><div class="stat-icon">📩</div><div class="stat-value">{{ stats.total_inquiries }}</div><div class="stat-name">Total Inquiries</div></div>
+    <div class="stat-card" style="border-color:#c0392b;"><div class="stat-icon">🔔</div><div class="stat-value">{{ stats.unread }}</div><div class="stat-name">Unread</div></div>
+  </div>
+
+  <div class="grid-2" style="align-items:start;gap:2rem;">
+    <!-- PROPERTIES -->
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h2 style="font-size:1.4rem;">My Properties</h2>
+        <a href="/owner/property/add" class="btn btn-terra btn-sm"><i class="fas fa-plus"></i> Add New</a>
+      </div>
+      <div class="card">
+        {% if properties %}
+        {% for prop in properties %}
+        <div class="property-row">
+          <div style="width:80px;height:60px;border-radius:8px;background:var(--sand);display:flex;align-items:center;justify-content:center;font-size:1.5rem;flex-shrink:0;">🏠</div>
+          <div class="prop-info">
+            <div class="prop-title">{{ prop.title }}</div>
+            <div class="prop-meta">{{ prop.city }} · ₹{{ "{:,.0f}".format(prop.price) }}/mo · {{ prop.bhk }} BHK</div>
+            <div style="margin-top:.3rem;display:flex;gap:.4rem;flex-wrap:wrap;">
+              {% if prop.is_active %}<span class="badge badge-success">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}
+              {% if prop.is_verified %}<span class="badge badge-info">Verified</span>{% else %}<span class="badge badge-warn">Pending</span>{% endif %}
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.4rem;">
+            <a href="/owner/property/edit/{{ prop.id }}" class="btn btn-sand btn-sm"><i class="fas fa-edit"></i></a>
+            <form method="POST" action="/owner/property/delete/{{ prop.id }}" onsubmit="return confirm('Deactivate this property?')">
+              <button type="submit" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="padding:2rem;text-align:center;color:var(--muted);">
+          <div style="font-size:2.5rem;">🏗️</div>
+          <p class="mt-2">No properties listed yet.</p>
+          <a href="/owner/property/add" class="btn btn-terra btn-sm mt-2">List Your First Property</a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- INQUIRIES -->
+    <div>
+      <h2 style="font-size:1.4rem;margin-bottom:1rem;">Recent Inquiries</h2>
+      <div class="card">
+        {% if inquiries %}
+        {% for inq in inquiries %}
+        <div style="padding:1rem;border-bottom:1px solid var(--sand);{% if not inq.is_read %}background:rgba(212,112,74,0.04);{% endif %}">
+          <div style="display:flex;justify-content:space-between;align-items:start;gap:1rem;">
+            <div>
+              {% if not inq.is_read %}<span class="badge badge-warn" style="margin-bottom:.3rem;">New</span>{% endif %}
+              <div style="font-weight:600;font-size:.9rem;">{{ inq.property.title }}</div>
+              <div style="color:var(--muted);font-size:.82rem;margin-top:.2rem;">From: Tenant #{{ inq.tenant_id }}</div>
+              <p style="font-size:.85rem;color:var(--charcoal);margin-top:.4rem;">{{ inq.message[:120] }}{% if inq.message|length > 120 %}...{% endif %}</p>
+            </div>
+            {% if not inq.is_read %}
+            <form method="POST" action="/owner/inquiry/{{ inq.id }}/read">
+              <button class="btn btn-sand btn-sm" type="submit">Mark Read</button>
+            </form>
+            {% endif %}
+          </div>
+          <div style="font-size:.75rem;color:var(--muted);margin-top:.5rem;">{{ inq.created_at.strftime('%d %b %Y, %I:%M %p') }}</div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <div style="padding:2rem;text-align:center;color:var(--muted);">
+          <div style="font-size:2.5rem;">📭</div>
+          <p class="mt-2">No inquiries yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

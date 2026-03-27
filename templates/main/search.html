@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% block title %}Search Properties — NestFind{% endblock %}
+{% block content %}
+<div style="background:var(--deep);padding:2.5rem 2rem;">
+  <div class="container">
+    <h1 style="color:white;font-size:2rem;">Find Your Home</h1>
+    <p style="color:rgba(255,255,255,0.6);margin-top:.3rem;">{{ properties|length }} properties found</p>
+  </div>
+</div>
+<div class="container section-sm">
+  <div class="sidebar-layout">
+    <!-- FILTERS SIDEBAR -->
+    <aside class="sidebar">
+      <h3>🔧 Filters</h3>
+      <form method="GET" action="/search" id="filter-form">
+        <div class="filter-section">
+          <h4>City</h4>
+          <select name="city" class="form-control">
+            <option value="">All Cities</option>
+            {% for city in cities %}<option value="{{ city }}" {% if filters.get('city')==city %}selected{% endif %}>{{ city }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-section">
+          <h4>Budget (₹/month)</h4>
+          <div class="price-inputs">
+            <input type="number" name="min_price" class="form-control" placeholder="Min" value="{{ filters.get('min_price','') }}">
+            <span>–</span>
+            <input type="number" name="max_price" class="form-control" placeholder="Max" value="{{ filters.get('max_price','') }}">
+          </div>
+        </div>
+        <div class="filter-section">
+          <h4>BHK</h4>
+          <select name="bhk" class="form-control">
+            <option value="">Any</option>
+            {% for b in [1,2,3,4] %}<option value="{{ b }}" {% if filters.get('bhk')==b|string %}selected{% endif %}>{{ b }} BHK</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-section">
+          <h4>Property Type</h4>
+          <select name="property_type" class="form-control">
+            <option value="">Any</option>
+            {% for t in ['apartment','villa','room','pg'] %}<option value="{{ t }}" {% if filters.get('property_type')==t %}selected{% endif %}>{{ t|capitalize }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-section">
+          <h4>Furnishing</h4>
+          <select name="furnishing" class="form-control">
+            <option value="">Any</option>
+            {% for f in ['furnished','semi','unfurnished'] %}<option value="{{ f }}" {% if filters.get('furnishing')==f %}selected{% endif %}>{{ f|capitalize }}</option>{% endfor %}
+          </select>
+        </div>
+        <div class="filter-section">
+          <h4>Amenities</h4>
+          <div class="amenities-grid">
+            {% for amenity in ['balcony','parking','gym','wifi','ac','lift','security','swimming_pool'] %}
+            <div class="form-check">
+              <input type="checkbox" name="amenities" value="{{ amenity }}" id="am_{{ amenity }}" {% if amenity in (filters.getlist('amenities') if filters else []) %}checked{% endif %}>
+              <label for="am_{{ amenity }}">{{ amenity|replace('_',' ')|title }}</label>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="filter-section">
+          <h4>Sort By</h4>
+          <select name="sort_by" class="form-control">
+            <option value="newest">Newest First</option>
+            <option value="price_asc" {% if filters.get('sort_by')=='price_asc' %}selected{% endif %}>Price: Low to High</option>
+            <option value="price_desc" {% if filters.get('sort_by')=='price_desc' %}selected{% endif %}>Price: High to Low</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-terra w-100" style="justify-content:center;">Apply Filters</button>
+        <a href="/search" class="btn btn-sand w-100 mt-1" style="justify-content:center;">Clear All</a>
+      </form>
+    </aside>
+
+    <!-- RESULTS -->
+    <div>
+      {% if recommendations %}
+      <div style="background:linear-gradient(135deg,#667eea22,#764ba211);border:1px solid #667eea33;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;">
+          <span class="ai-badge">🤖 AI Picks For You</span>
+          <span style="color:var(--muted);font-size:.85rem;">Based on your preferences</span>
+        </div>
+        <div class="grid-4">
+          {% for prop in recommendations %}
+          <a href="/property/{{ prop.id }}" style="text-decoration:none;">
+            <div class="card property-card" style="cursor:pointer;">
+              <div class="card-img" style="height:140px;">
+                {% if prop.images %}<img src="{{ prop.images[0].url }}" alt="{{ prop.title }}" style="height:140px;">
+                {% else %}<div class="gallery-placeholder" style="height:140px;font-size:2rem;">🏠</div>{% endif %}
+              </div>
+              <div class="card-body" style="padding:.8rem;">
+                <div class="card-price" style="font-size:1.1rem;">₹{{ "{:,.0f}".format(prop.price) }}<span>/mo</span></div>
+                <div class="card-title" style="font-size:.85rem;">{{ prop.title[:40] }}</div>
+                <div class="card-location" style="font-size:.78rem;">{{ prop.city }}</div>
+              </div>
+            </div>
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+      {% endif %}
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <span style="color:var(--muted);font-size:.9rem;">{{ properties|length }} results</span>
+      </div>
+
+      {% if properties %}
+      <div class="grid-3" style="grid-template-columns:repeat(auto-fill,minmax(280px,1fr));">
+        {% for prop in properties %}
+        <div class="card property-card">
+          <div class="card-img">
+            {% if prop.images %}<img src="{{ prop.images[0].url }}" alt="{{ prop.title }}">
+            {% else %}<div class="gallery-placeholder" style="height:200px;">🏠</div>{% endif %}
+            {% if prop.is_verified %}<span style="position:absolute;top:10px;right:10px;background:#2d7a4f;color:white;padding:3px 8px;border-radius:20px;font-size:.72rem;font-weight:700;">✓ Verified</span>{% endif %}
+          </div>
+          <div class="card-body">
+            <div class="d-flex justify-between align-center">
+              <div class="card-price">₹{{ "{:,.0f}".format(prop.price) }}<span>/mo</span></div>
+            </div>
+            <div class="card-title">{{ prop.title }}</div>
+            <div class="card-location"><i class="fas fa-map-marker-alt" style="color:var(--terracotta)"></i> {{ prop.location }}, {{ prop.city }}</div>
+            <div class="card-tags mt-1">
+              <span class="tag">{{ prop.bhk }} BHK</span>
+              {% if prop.property_type %}<span class="tag">{{ prop.property_type|capitalize }}</span>{% endif %}
+              {% if prop.furnishing %}<span class="tag">{{ prop.furnishing|capitalize }}</span>{% endif %}
+              {% if prop.area_sqft %}<span class="tag">{{ prop.area_sqft|int }} sqft</span>{% endif %}
+            </div>
+            <div class="amenity-list" style="margin-top:.5rem;">
+              {% if prop.balcony %}<span class="amenity-chip"><i class="fas fa-door-open"></i> Balcony</span>{% endif %}
+              {% if prop.parking %}<span class="amenity-chip"><i class="fas fa-car"></i> Parking</span>{% endif %}
+              {% if prop.gym %}<span class="amenity-chip"><i class="fas fa-dumbbell"></i> Gym</span>{% endif %}
+              {% if prop.wifi %}<span class="amenity-chip"><i class="fas fa-wifi"></i> WiFi</span>{% endif %}
+              {% if prop.ac %}<span class="amenity-chip"><i class="fas fa-snowflake"></i> AC</span>{% endif %}
+            </div>
+          </div>
+          <div class="card-footer">
+            <div>{% for i in range(prop.avg_rating|int) %}<span style="color:#f39c12">★</span>{% endfor %} <span class="rating-count">({{ prop.review_count }})</span></div>
+            <div style="display:flex;gap:.5rem;align-items:center;">
+              {% if current_user.is_authenticated and current_user.role == 'tenant' %}
+              <button class="wishlist-btn" onclick="toggleWishlist({{ prop.id }},this)" title="Wishlist"><i class="fas fa-heart"></i></button>
+              {% endif %}
+              <a href="/property/{{ prop.id }}" class="btn btn-terra btn-sm">View</a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="text-center" style="padding:4rem;color:var(--muted);">
+        <div style="font-size:3.5rem">🔍</div>
+        <h3 style="margin-top:1rem;color:var(--charcoal)">No properties found</h3>
+        <p class="mt-1">Try adjusting your filters or <a href="/search">clear all</a></p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+<script>
+async function toggleWishlist(id, btn) {
+  const res = await fetch('/wishlist/toggle/'+id, {method:'POST'});
+  const data = await res.json();
+  btn.classList.toggle('active', data.status==='added');
+  btn.title = data.status==='added' ? 'Remove from Wishlist' : 'Add to Wishlist';
+}
+</script>
+{% endblock %}

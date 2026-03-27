@@ -1,0 +1,36 @@
+{% extends 'admin/base.html' %}
+{% block title %}Manage Properties — NestFind{% endblock %}
+{% block admin_content %}
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 class="admin-title" style="margin-bottom:0;">🏠 All Properties</h1>
+  <span style="color:var(--muted);">{{ properties|length }} total</span>
+</div>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Title</th><th>Owner</th><th>City</th><th>Price</th><th>BHK</th><th>Status</th><th>Actions</th></tr></thead>
+    <tbody>
+      {% for prop in properties %}
+      <tr>
+        <td><a href="/property/{{ prop.id }}" style="font-weight:600;color:var(--deep);">{{ prop.title[:40] }}</a></td>
+        <td style="font-size:.85rem;color:var(--muted);">{{ prop.owner.name }}</td>
+        <td>{{ prop.city }}</td>
+        <td>₹{{ "{:,.0f}".format(prop.price) }}</td>
+        <td>{{ prop.bhk }} BHK</td>
+        <td>
+          {% if prop.is_verified %}<span class="badge badge-success">Verified</span>{% else %}<span class="badge badge-warn">Pending</span>{% endif %}
+          {% if prop.is_active %}<span class="badge badge-info">Active</span>{% else %}<span class="badge badge-danger">Inactive</span>{% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:.4rem;">
+            {% if not prop.is_verified %}
+            <form method="POST" action="/admin/property/verify/{{ prop.id }}" style="display:inline;"><button type="submit" class="btn btn-success btn-sm">Verify</button></form>
+            {% endif %}
+            <form method="POST" action="/admin/property/toggle/{{ prop.id }}" style="display:inline;"><button type="submit" class="btn {{ 'btn-danger' if prop.is_active else 'btn-sand' }} btn-sm">{{ 'Deactivate' if prop.is_active else 'Activate' }}</button></form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

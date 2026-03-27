@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+{% block title %}My Wishlist — NestFind{% endblock %}
+{% block content %}
+<div style="background:var(--sand);padding:2.5rem 2rem;">
+  <div class="container">
+    <h1>❤️ My Wishlist</h1>
+    <p style="color:var(--muted);">{{ properties|length }} saved properties</p>
+  </div>
+</div>
+<div class="container section">
+  {% if properties %}
+  <div class="grid-3">
+    {% for prop in properties %}
+    <div class="card property-card">
+      <div class="card-img">
+        {% if prop.images %}<img src="{{ prop.images[0].url }}" alt="{{ prop.title }}">
+        {% else %}<div class="gallery-placeholder" style="height:200px;">🏠</div>{% endif %}
+      </div>
+      <div class="card-body">
+        <div class="card-price">₹{{ "{:,.0f}".format(prop.price) }}<span>/mo</span></div>
+        <div class="card-title">{{ prop.title }}</div>
+        <div class="card-location"><i class="fas fa-map-marker-alt" style="color:var(--terracotta)"></i> {{ prop.city }}</div>
+        <div class="card-tags mt-1"><span class="tag">{{ prop.bhk }} BHK</span></div>
+      </div>
+      <div class="card-footer">
+        <button class="btn btn-danger btn-sm" onclick="toggleWishlist({{ prop.id }},this)"><i class="fas fa-heart-broken"></i> Remove</button>
+        <a href="/property/{{ prop.id }}" class="btn btn-terra btn-sm">View</a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center" style="padding:4rem;color:var(--muted);">
+    <div style="font-size:3.5rem">💔</div>
+    <h3 style="margin-top:1rem;color:var(--charcoal);">No saved properties</h3>
+    <p class="mt-1">Start browsing and save properties you like!</p>
+    <a href="/search" class="btn btn-terra mt-3">Browse Properties</a>
+  </div>
+  {% endif %}
+</div>
+<script>
+async function toggleWishlist(id, btn) {
+  await fetch('/wishlist/toggle/'+id, {method:'POST'});
+  btn.closest('.card').remove();
+}
+</script>
+{% endblock %}

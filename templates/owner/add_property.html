@@ -1,0 +1,115 @@
+{% extends 'base.html' %}
+{% block title %}Add Property — NestFind{% endblock %}
+{% block extra_css %}
+<style>
+.form-section{background:white;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;box-shadow:0 2px 12px rgba(26,20,18,0.06);}
+.form-section h3{margin-bottom:1.2rem;font-size:1.1rem;padding-bottom:.8rem;border-bottom:2px solid var(--sand);}
+</style>
+{% endblock %}
+{% block content %}
+<div style="background:var(--deep);padding:2.5rem 2rem;">
+  <div class="container">
+    <h1 style="color:white;">List Your Property</h1>
+    <p style="color:rgba(255,255,255,0.6);">Fill in the details below to list your rental property</p>
+  </div>
+</div>
+<div class="container" style="padding-top:2rem;padding-bottom:3rem;">
+  <div style="max-width:800px;margin:0 auto;">
+
+    <!-- AI Price Predictor -->
+    <div style="background:linear-gradient(135deg,#667eea15,#764ba210);border:1px solid #667eea30;border-radius:16px;padding:1.5rem;margin-bottom:1.5rem;">
+      <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.8rem;"><span class="ai-badge">🤖 AI Price Predictor</span></div>
+      <p style="font-size:.85rem;color:var(--muted);margin-bottom:1rem;">Get an AI-suggested price before listing. Fill in BHK, area, and furnishing above.</p>
+      <button type="button" class="btn btn-sand btn-sm" onclick="getPriceSuggestion()"><i class="fas fa-magic"></i> Predict Fair Price</button>
+      <div id="price-result" style="margin-top:.8rem;display:none;background:white;border-radius:10px;padding:.8rem;font-size:.9rem;"></div>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      <div class="form-section">
+        <h3>📋 Basic Information</h3>
+        <div class="form-group"><label class="form-label">Property Title *</label><input type="text" name="title" class="form-control" placeholder="e.g. Spacious 2BHK in Koregaon Park" required></div>
+        <div class="form-group"><label class="form-label">Description</label><textarea name="description" class="form-control" placeholder="Describe your property..."></textarea></div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">City *</label><input type="text" name="city" class="form-control" placeholder="e.g. Pune" required id="city-field"></div>
+          <div class="form-group"><label class="form-label">Full Address *</label><input type="text" name="location" class="form-control" placeholder="Street, Area, City" required></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Latitude</label><input type="number" name="latitude" class="form-control" placeholder="e.g. 18.5204" step="any"></div>
+          <div class="form-group"><label class="form-label">Longitude</label><input type="number" name="longitude" class="form-control" placeholder="e.g. 73.8567" step="any"></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>🏠 Property Details</h3>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Monthly Rent (₹) *</label><input type="number" name="price" id="price-field" class="form-control" placeholder="e.g. 15000" required></div>
+          <div class="form-group"><label class="form-label">BHK *</label><select name="bhk" class="form-control" id="bhk-field" required><option value="">Select BHK</option><option value="1">1 BHK</option><option value="2">2 BHK</option><option value="3">3 BHK</option><option value="4">4+ BHK</option></select></div>
+          <div class="form-group"><label class="form-label">Property Type</label><select name="property_type" class="form-control"><option value="">Select Type</option><option value="apartment">Apartment</option><option value="villa">Villa</option><option value="room">Room</option><option value="pg">PG</option></select></div>
+          <div class="form-group"><label class="form-label">Furnishing</label><select name="furnishing" class="form-control" id="furnishing-field"><option value="unfurnished">Unfurnished</option><option value="semi">Semi-Furnished</option><option value="furnished">Furnished</option></select></div>
+          <div class="form-group"><label class="form-label">Area (sqft)</label><input type="number" name="area_sqft" id="area-field" class="form-control" placeholder="e.g. 900"></div>
+          <div class="form-group"><label class="form-label">Available From</label><input type="date" name="available_from" class="form-control"></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Flooring</label><select name="flooring" class="form-control"><option value="">Select</option><option value="tile">Tile</option><option value="marble">Marble</option><option value="wooden">Wooden</option><option value="granite">Granite</option></select></div>
+          <div class="form-group"><label class="form-label">Ventilation</label><select name="ventilation" class="form-control"><option value="">Select</option><option value="good">Good</option><option value="moderate">Moderate</option><option value="cross">Cross Ventilation</option></select></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>✨ Amenities</h3>
+        <div class="amenities-grid">
+          {% for am in [('balcony','🏞️ Balcony'),('parking','🚗 Parking'),('lift','🛗 Lift'),('security','🔒 Security'),('water_supply','💧 Water Supply'),('gym','💪 Gym'),('swimming_pool','🏊 Swimming Pool'),('wifi','📶 WiFi'),('ac','❄️ AC'),('power_backup','⚡ Power Backup')] %}
+          <div class="form-check"><input type="checkbox" name="{{ am[0] }}" id="{{ am[0] }}"><label for="{{ am[0] }}">{{ am[1] }}</label></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>👥 Tenant Preferences</h3>
+        <div class="amenities-grid">
+          <div class="form-check"><input type="checkbox" name="family_allowed" id="fam" checked><label for="fam">👨‍👩‍👧 Family Allowed</label></div>
+          <div class="form-check"><input type="checkbox" name="bachelor_allowed" id="bach" checked><label for="bach">🧑 Bachelor Allowed</label></div>
+          <div class="form-check"><input type="checkbox" name="pets_allowed" id="pets"><label for="pets">🐾 Pets Allowed</label></div>
+          <div class="form-check"><input type="checkbox" name="veg_only" id="veg"><label for="veg">🥦 Veg Only</label></div>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h3>📸 Property Photos</h3>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem;">Upload photos of living room, bedroom, kitchen, bathroom, etc.</p>
+        <div id="image-slots">
+          <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem;">
+            <input type="file" name="images" accept="image/*" class="form-control">
+            <input type="text" name="captions" class="form-control" placeholder="Caption (e.g. Living Room)">
+          </div>
+        </div>
+        <button type="button" class="btn btn-sand btn-sm mt-1" onclick="addImageSlot()"><i class="fas fa-plus"></i> Add More Photos</button>
+      </div>
+
+      <button type="submit" class="btn btn-terra" style="width:100%;justify-content:center;font-size:1rem;padding:.9rem;">
+        <i class="fas fa-home"></i> List My Property
+      </button>
+    </form>
+  </div>
+</div>
+<script>
+function addImageSlot(){
+  const slot = document.createElement('div');
+  slot.style.cssText='display:flex;gap:.5rem;align-items:center;margin-bottom:.5rem;';
+  slot.innerHTML='<input type="file" name="images" accept="image/*" class="form-control"><input type="text" name="captions" class="form-control" placeholder="Caption">';
+  document.getElementById('image-slots').appendChild(slot);
+}
+async function getPriceSuggestion(){
+  const bhk=document.getElementById('bhk-field').value;
+  const area=document.getElementById('area-field').value;
+  const furnishing=document.getElementById('furnishing-field').value;
+  if(!bhk){alert('Please select BHK first.');return;}
+  const res=await fetch('/api/predict-price',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({bhk:parseInt(bhk),area_sqft:parseFloat(area)||500,furnishing:furnishing})});
+  const data=await res.json();
+  const el=document.getElementById('price-result');
+  el.style.display='block';
+  el.innerHTML=`<strong>AI Suggested Price:</strong> ₹${data.predicted_price.toLocaleString()}/mo<br><span style="color:var(--muted);font-size:.82rem;">Range: ₹${data.range_low.toLocaleString()} – ₹${data.range_high.toLocaleString()} (${data.confidence} confidence)</span>`;
+  document.getElementById('price-field').value=data.predicted_price;
+}
+</script>
+{% endblock %}

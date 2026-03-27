@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}NestFind — Smart Rental Property Search{% endblock %}
+{% block content %}
+<section class="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div class="section-badge">✦ AI-Powered Rental Search</div>
+    <h1>Find Your Perfect<br><span>Home, Smarter.</span></h1>
+    <p>Data mining and AI recommendations connect tenants with their ideal rental properties across India.</p>
+    <div class="search-box">
+      <select class="form-control" id="hero-city">
+        <option value="">📍 Select City</option>
+        {% for city in cities %}<option value="{{ city }}">{{ city }}</option>{% endfor %}
+      </select>
+      <select class="form-control" id="hero-bhk">
+        <option value="">🏠 BHK</option>
+        <option value="1">1 BHK</option>
+        <option value="2">2 BHK</option>
+        <option value="3">3 BHK</option>
+        <option value="4">4+ BHK</option>
+      </select>
+      <select class="form-control" id="hero-type">
+        <option value="">🏢 Type</option>
+        <option value="apartment">Apartment</option>
+        <option value="villa">Villa</option>
+        <option value="room">Room</option>
+        <option value="pg">PG</option>
+      </select>
+      <button class="btn btn-terra" onclick="heroSearch()"><i class="fas fa-search"></i> Search</button>
+    </div>
+    <div class="stats-bar mt-4">
+      <div class="stat-item"><div class="stat-num">10K+</div><div class="stat-label">Properties</div></div>
+      <div class="stat-item"><div class="stat-num">50+</div><div class="stat-label">Cities</div></div>
+      <div class="stat-item"><div class="stat-num">25K+</div><div class="stat-label">Happy Tenants</div></div>
+      <div class="stat-item"><div class="stat-num">99%</div><div class="stat-label">Verified Listings</div></div>
+    </div>
+  </div>
+</section>
+<section class="section" style="background:var(--sand);">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">✦ How It Works</div>
+      <h2>Smart Search in 3 Steps</h2>
+    </div>
+    <div class="grid-3">
+      <div class="card" style="padding:2rem;text-align:center;"><div style="font-size:2.5rem;margin-bottom:1rem;">🔍</div><h3>1. Search and Filter</h3><p style="color:var(--muted);margin-top:.5rem;">Filter by city, budget, BHK, furnishing, and amenities.</p></div>
+      <div class="card" style="padding:2rem;text-align:center;"><div style="font-size:2.5rem;margin-bottom:1rem;">🤖</div><h3>2. AI Recommendations</h3><p style="color:var(--muted);margin-top:.5rem;">Our data mining engine learns your preferences and suggests the best matches.</p></div>
+      <div class="card" style="padding:2rem;text-align:center;"><div style="font-size:2.5rem;margin-bottom:1rem;">🤝</div><h3>3. Connect and Move In</h3><p style="color:var(--muted);margin-top:.5rem;">Contact owners directly, schedule visits, and finalize your rental.</p></div>
+    </div>
+  </div>
+</section>
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge">✦ Featured Listings</div>
+      <h2>Latest Properties</h2>
+      <p>Handpicked and verified rental homes across top cities</p>
+    </div>
+    {% if featured %}
+    <div class="grid-3">
+      {% for prop in featured %}
+      <div class="card property-card">
+        <div class="card-img">
+          {% if prop.images %}<img src="{{ prop.images[0].url }}" alt="{{ prop.title }}">
+          {% else %}<div class="gallery-placeholder" style="height:200px;">🏠</div>{% endif %}
+        </div>
+        <div class="card-body">
+          <div class="d-flex justify-between align-center">
+            <div class="card-price">₹{{ "{:,.0f}".format(prop.price) }}<span>/mo</span></div>
+            {% if prop.is_verified %}<span class="tag tag-verified">✓ Verified</span>{% endif %}
+          </div>
+          <div class="card-title">{{ prop.title }}</div>
+          <div class="card-location"><i class="fas fa-map-marker-alt" style="color:var(--terracotta)"></i> {{ prop.location }}, {{ prop.city }}</div>
+          <div class="card-tags">
+            <span class="tag">{{ prop.bhk }} BHK</span>
+            {% if prop.property_type %}<span class="tag">{{ prop.property_type|capitalize }}</span>{% endif %}
+            {% if prop.furnishing %}<span class="tag">{{ prop.furnishing|capitalize }}</span>{% endif %}
+          </div>
+        </div>
+        <div class="card-footer">
+          <div>{% for i in range(prop.avg_rating|int) %}<span style="color:#f39c12">★</span>{% endfor %} <span class="rating-count">({{ prop.review_count }})</span></div>
+          <a href="/property/{{ prop.id }}" class="btn btn-terra btn-sm">View</a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center" style="padding:3rem;color:var(--muted)"><div style="font-size:3rem">🏠</div><p class="mt-2">No properties yet. <a href="/register">Register as an owner</a> to list yours!</p></div>
+    {% endif %}
+    <div class="text-center mt-4"><a href="/search" class="btn btn-dark">View All Properties <i class="fas fa-arrow-right"></i></a></div>
+  </div>
+</section>
+<section class="section" style="background:linear-gradient(135deg,var(--deep) 0%,var(--charcoal) 100%);color:white;">
+  <div class="container">
+    <div class="section-header">
+      <div class="section-badge" style="background:rgba(212,112,74,0.2);color:var(--clay);border-color:rgba(212,112,74,0.3)">✦ AI Features</div>
+      <h2 style="color:white;">Powered by Data Mining</h2>
+    </div>
+    <div class="grid-4">
+      <div style="text-align:center;padding:1.5rem;"><div style="font-size:2rem;margin-bottom:.8rem;">🎯</div><h3 style="color:white;font-size:1.1rem;">Smart Recommendations</h3><p style="color:rgba(255,255,255,0.6);font-size:.85rem;margin-top:.4rem;">Content-based and collaborative filtering</p></div>
+      <div style="text-align:center;padding:1.5rem;"><div style="font-size:2rem;margin-bottom:.8rem;">💰</div><h3 style="color:white;font-size:1.1rem;">Price Prediction</h3><p style="color:rgba(255,255,255,0.6);font-size:.85rem;margin-top:.4rem;">Random Forest model for fair pricing</p></div>
+      <div style="text-align:center;padding:1.5rem;"><div style="font-size:2rem;margin-bottom:.8rem;">👥</div><h3 style="color:white;font-size:1.1rem;">User Clustering</h3><p style="color:rgba(255,255,255,0.6);font-size:.85rem;margin-top:.4rem;">K-Means groups for personalized results</p></div>
+      <div style="text-align:center;padding:1.5rem;"><div style="font-size:2rem;margin-bottom:.8rem;">🔗</div><h3 style="color:white;font-size:1.1rem;">Association Rules</h3><p style="color:rgba(255,255,255,0.6);font-size:.85rem;margin-top:.4rem;">Apriori patterns from wishlist behavior</p></div>
+    </div>
+  </div>
+</section>
+<script>
+function heroSearch(){const c=document.getElementById("hero-city").value,b=document.getElementById("hero-bhk").value,t=document.getElementById("hero-type").value;let u="/search?";if(c)u+="city="+c+"&";if(b)u+="bhk="+b+"&";if(t)u+="property_type="+t+"&";window.location.href=u;}
+</script>
+{% endblock %}
